@@ -13,47 +13,47 @@ jobs:
 
     steps:  # 実行ステップ
 
-  # IP取得ライブラリをインストール
-  - name: Public IP Install
-    id: ip
-    uses: haythem/public-ip@v1.3
+      # IP取得ライブラリをインストール
+      - name: Public IP Install
+        id: ip
+        uses: haythem/public-ip@v1.3
 
-  # BranchをCheckout
-  - name: Checkout
-    uses: actions/checkout@v2
+      # BranchをCheckout
+      - name: Checkout
+        uses: actions/checkout@v2
 
-  # AWS CLIをインストールする
-  - name: AWS CLI install
-    run: |
-      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      unzip awscliv2.zip
-      sudo ./aws/install --update
-      aws --version
+      # AWS CLIをインストールする
+      - name: AWS CLI install
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
 
-  # AWS CLIにキーを設定をする
-  - name: AWS set Credentials
-    uses: aws-actions/configure-aws-credentials@v1
-    with:
-      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws-region: ap-northeast-1
-
-  # デプロイする
-  - name: Deploy
-    run: |
-  # SSHのセキュリティグループを開放する
-  aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
-  # SSH接続して、git pullする
-  echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
-  chmod 600 private_key
-  # プロジェクトのディレクトリパスを動的に設定
-  if [ "${{ runner.os }}" == "Windows" ]; then
-    PROJECT_DIR="C:\\Users\\my-pc\\dev\\ssh_task-rpg\\task-rpg"
-  elif [ "${{ runner.os }}" == "Linux" ]; then
-    PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
-  fi
-  ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd $PROJECT_DIR && git fetch --prune && git checkout main && git pull origin main"
-
-  # SSHのセキュリティグループを閉じる
-  aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          # AWS CLIにキーを設定をする
+          - name: AWS set Credentials
+            uses: aws-actions/configure-aws-credentials@v1
+            with:
+              aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+              aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+              aws-region: ap-northeast-1
+        
+          # デプロイする
+          - name: Deploy
+            run: |
+              # SSHのセキュリティグループを開放する
+              aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+        
+              # SSH接続して、git pullする
+              echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
+              chmod 600 private_key
+              # プロジェクトのディレクトリパスを動的に設定
+              if [ "${{ runner.os }}" == "Windows" ]; then
+                PROJECT_DIR="C:\\Users\\my-pc\\dev\\ssh_task-rpg\\task-rpg"
+              elif [ "${{ runner.os }}" == "Linux" ]; then
+                PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
+              fi
+              ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd $PROJECT_DIR && git fetch --prune && git checkout main && git pull origin main"
+        
+              # SSHのセキュリティグループを閉じる
+              aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
