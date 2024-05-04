@@ -1,0 +1,26 @@
+{
+    "name": "Task-RPG",
+    "short_name": "Task-RPG",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+        "description": "『Task-RPG』は、タスク管理をゲーム化するアプリケーションです。",
+    "icons": [
+      {
+        "src": "icons/Task-RPG_icon_192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icons/Task-RPG_icon_192.png",
+        "sizes": "180x180",
+        "type": "image/png"
+      },
+      {
+        "src": "icons/Task-RPG_icon_512.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
