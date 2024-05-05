@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main  # mainブランチへのpushのみをトリガーに設定
+  workflow_dispatch:  # 手動トリガーを可能にする
 
 jobs:
   build:
