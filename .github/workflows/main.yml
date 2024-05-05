@@ -57,7 +57,7 @@ jobs:
           PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
          elif [[ "$(uname -s)" == "CYGWIN"* || "$(uname -s)" == "MINGW"* ]]; then
             # Windows (CygwinまたはMinGWを使用している場合) のプロジェクトディレクトリ
-          PROJECT_DIR="C:/Users/my-pc/dev/ssh_task-rpg/task-rpg"
+          PROJECT_DIR="C:/Users/my-pc/dev/ssh_task-rpg"
          fi
          ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd $PROJECT_DIR && git fetch --prune && git checkout main && git pull origin main"
 
