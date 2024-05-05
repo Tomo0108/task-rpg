@@ -1,65 +1,48 @@
 name: EC2 auto deploy
 
+# このWorkflowはGitHubにpushされたときに自動的にトリガーされる
 on:
- pull_request:
-   branches: [ main ]
-   types: [closed]
-
- workflow_dispatch:
+  push:
+    branches:
+      - main  # mainブランチへのpushのみをトリガーに設定
 
 jobs:
- build:
-   runs-on: ubuntu-latest
-   steps:
+  build:
+    runs-on: ubuntu-latest  # Ubuntu最新バージョンのランナーで実行
+    steps:
+      # IP取得ライブラリをインストール
+      - name: Public IP Install
+        id: ip
+        uses: haythem/public-ip@v1.3
 
-     # IP取得ライブラリをインストール
-     - name: Public IP Install
-       id: ip
-       uses: haythem/public-ip@v1.3
+      # リポジトリをCheckout
+      - name: Checkout
+        uses: actions/checkout@v2
 
-     # BranchをCheckout
-     - name: Checkout
-       uses: actions/checkout@v2
+      # AWS CLIをインストールする
+      - name: AWS CLI install
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
 
-     # AWS CLIをインストールする
-     - name: AWS CLI install
-       run: |
-         curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-         unzip awscliv2.zip
-         sudo ./aws/install --update
-         aws --version
+      # AWS CLIにキーを設定をする
+      - name: AWS set Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1  # リージョンは東京(ap-northeast-1)に設定
 
-     # AWS CLIにキーを設定をする
-     - name: AWS set Credentials
-       uses: aws-actions/configure-aws-credentials@v1
-       with:
-         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-         aws-region: ap-northeast-1
+      # デプロイを行う
+      - name: Deploy
+        run: |
+          # SSHのセキュリティグループを開放する
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
-     # デプロイする
-     - name: Deploy
-       run: |
+          # SSH接続して、必要なディレクトリを作成し、git操作を行う
+          ssh-agent bash -c 'ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}"); ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "mkdir -p /home/ec2-user/task-rpg && cd /home/ec2-user/task-rpg && git fetch --prune && git checkout main && git pull origin main"'
 
-         # SSHのセキュリティグループを開放する
-         aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
-         # SSH接続して、git pullする
-         echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
-         chmod 400 private_key
-         
-         # システムの種類に応じてプロジェクトディレクトリのパスを設定する
-         if [[ "$(uname -s)" == "Linux" ]]; then
-            # Linuxの場合のプロジェクトディレクトリ
-          PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
-         elif [[ "$(uname -s)" == "Darwin" ]]; then
-            # macOSの場合のプロジェクトディレクトリ
-          PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
-         elif [[ "$(uname -s)" == "CYGWIN"* || "$(uname -s)" == "MINGW"* ]]; then
-            # Windows (CygwinまたはMinGWを使用している場合) のプロジェクトディレクトリ
-          PROJECT_DIR="C:/Users/my-pc/dev/ssh_task-rpg"
-         fi
-         ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd $PROJECT_DIR && git fetch --prune && git checkout main && git pull origin main"
-
-         # SSHのセキュリティグループを閉じる
-         aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          # SSHのセキュリティグループを閉じる
+          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
