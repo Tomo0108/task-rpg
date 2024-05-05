@@ -53,13 +53,22 @@ jobs:
           # SSH接続して、git pullする
           echo "${{ secrets.GIT_PRIVATE_KEY }}" > private_key
           chmod 600 private_key
-          # プロジェクトのディレクトリパスを動的に設定
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            PROJECT_DIR="C:\\Users\\my-pc\\dev\\ssh_task-rpg\\task-rpg"
-          elif [ "${{ runner.os }}" == "Linux" ]; then
-            PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
+
+          # システムの種類に応じてプロジェクトディレクトリのパスを設定する
+          if [[ "$(uname -s)" == "Linux" ]]; then
+              # Linuxの場合のプロジェクトディレクトリ
+              PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
+          elif [[ "$(uname -s)" == "Darwin" ]]; then
+              # macOSの場合のプロジェクトディレクトリ
+              PROJECT_DIR="/Users/toumon/dev/create_apps/ssh_task-rpg"
+          elif [[ "$(uname -s)" == "CYGWIN"* || "$(uname -s)" == "MINGW"* ]]; then
+              # Windows (CygwinまたはMinGWを使用している場合) のプロジェクトディレクトリ
+              PROJECT_DIR="C:\\Users\\my-pc\\dev\\ssh_task-rpg\\task-rpg"
           fi
           ssh -oStrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} -i private_key "cd $PROJECT_DIR && git fetch --prune && git checkout main && git pull origin main"
     
           # SSHのセキュリティグループを閉じる
           aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+          # private_keyの削除
+          rm -f private_key
