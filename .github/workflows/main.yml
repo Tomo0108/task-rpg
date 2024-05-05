@@ -47,6 +47,11 @@ jobs:
           else
             echo "Git is already installed."
           fi
+      
+      - name: Display Git path
+        run: |
+            echo "Git path: $(which git)"
+            echo "PATH: $PATH"
 
       # デプロイを行う
       - name: Deploy
