@@ -46,7 +46,8 @@ jobs:
             sudo apt-get install git
           else
             echo "Git is already installed."
-      
+          fi
+            
       # デプロイを行う
       - name: Deploy
         run: |
