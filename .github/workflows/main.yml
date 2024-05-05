@@ -46,13 +46,7 @@ jobs:
             sudo apt-get install git
           else
             echo "Git is already installed."
-          fi
       
-      - name: Display Git path
-        run: |
-            echo "Git path: $(which git)"
-            echo "PATH: $PATH"
-
       # デプロイを行う
       - name: Deploy
         run: |
@@ -67,11 +61,10 @@ jobs:
           fi
 
           # SSH接続して、必要なディレクトリを作成し、git操作を行う
-          ssh-agent bash -c 'ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}"); ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "mkdir -p /home/ec2-user/task-rpg && cd /home/ec2-user/task-rpg && git fetch --prune && git checkout main and git pull origin main"'
+          ssh-agent bash -c 'ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}"); ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "mkdir -p /home/ec2-user/task-rpg && cd /home/ec2-user/task-rpg && /usr/bin/git fetch --prune && /usr/bin/git checkout main && /usr/bin/git pull origin main"'
 
           # セキュリティグループのルール削除のタイミングと条件を確認して、必要に応じて削除
           if [ -n "$EXISTS" ]; then
             echo "Removing rule for $IP_ADDRESS"
             aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr $IP_ADDRESS
           fi
-          
