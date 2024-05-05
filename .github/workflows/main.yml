@@ -7,6 +7,9 @@ on:
       - main  # mainブランチへのpushのみをトリガーに設定
   workflow_dispatch:  # 手動トリガーを可能にする
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest  # Ubuntu最新バージョンのランナーで実行
