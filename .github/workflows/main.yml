@@ -38,11 +38,21 @@ jobs:
       # デプロイを行う
       - name: Deploy
         run: |
-          # SSHのセキュリティグループを開放する
-          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          # IPアドレス取得
+          IP_ADDRESS="${{ steps.ip.outputs.ipv4 }}/32"
+    
+          # セキュリティグループルールを追加する前に確認
+          EXISTS=$(aws ec2 describe-security-groups --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --query 'SecurityGroups[].IpPermissions[?ToPort==`22` && FromPort==`22` && IpProtocol==`tcp` && contains(IpRanges[].CidrIp, `'"$IP_ADDRESS"'`)]' --output text)
+          if [ -z "$EXISTS" ]; then
+            echo "Adding new rule for $IP_ADDRESS"
+            aws ec2 authorize-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr $IP_ADDRESS
+          fi
 
           # SSH接続して、必要なディレクトリを作成し、git操作を行う
           ssh-agent bash -c 'ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}"); ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "mkdir -p /home/ec2-user/task-rpg && cd /home/ec2-user/task-rpg && git fetch --prune && git checkout main && git pull origin main"'
 
-          # SSHのセキュリティグループを閉じる
-          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+          # セキュリティグループのルール削除のタイミングと条件を確認して、必要に応じて削除
+          if [ -n "$EXISTS" ]; then
+            echo "Removing rule for $IP_ADDRESS"
+            aws ec2 revoke-security-group-ingress --group-id ${{ secrets.EC2_SECURITY_GROUP_ID }} --protocol tcp --port 22 --cidr $IP_ADDRESS
+          fi
