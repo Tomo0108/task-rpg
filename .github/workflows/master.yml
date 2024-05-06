@@ -4,7 +4,7 @@ name: EC2 auto deploy
 on:
   push:
     branches:
-      - main  # mainブランチへのpushのみをトリガーに設定
+      - master  # masterブランチへのpushのみをトリガーに設定
   workflow_dispatch:  # 手動トリガーを可能にする
 
 permissions:
@@ -65,7 +65,7 @@ jobs:
           fi
 
           # SSH接続して、必要なディレクトリを作成し、git操作を行う
-          ssh-agent bash -c 'ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}"); ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "mkdir -p /home/ec2-user/task-rpg && cd /home/ec2-user/task-rpg && /usr/bin/git fetch --prune && /usr/bin/git checkout main && /usr/bin/git pull origin main"'
+          ssh-agent bash -c 'ssh-add <(echo "${{ secrets.SSH_PRIVATE_KEY }}"); ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "mkdir -p /home/ec2-user/task-rpg && cd /home/ec2-user/task-rpg && /usr/bin/git fetch --prune && /usr/bin/git checkout master && /usr/bin/git pull origin master"'
 
           # セキュリティグループのルール削除のタイミングと条件を確認して、必要に応じて削除
           if [ -n "$EXISTS" ]; then

@@ -1,9 +1,9 @@
 name: Deploy to AWS EC2
-# このGitHub Actionsワークフローは、mainブランチへのプッシュがトリガーとなります
+# このGitHub Actionsワークフローは、masterブランチへのプッシュがトリガーとなります
 on:
   push:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 # ワークフローのジョブ定義
