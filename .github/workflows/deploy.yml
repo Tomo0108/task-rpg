@@ -6,6 +6,7 @@ on:
       - master
   workflow_dispatch:
 
+
 # ワークフローのジョブ定義
 jobs:
   deploy:
@@ -15,28 +16,38 @@ jobs:
     # このステップでリポジトリのコードをチェックアウトします
     - uses: actions/checkout@v2
     # AWSクレデンシャルをセットアップするステップ
-    - name: Setup AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-1  # リージョンを指定
-        role-to-assume: arn:aws:iam::185588851189:role/auto_deploy_task-rpg  # 引き受けるIAMロールを指定
-        role-duration-seconds: 3600  # ロールの引き受け時間を秒で指定
+    # - name: Setup AWS Credentials
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: ap-northeast-1  # リージョンを指定
+    #     role-to-assume: arn:aws:iam::185588851189:role/auto_deploy_task-rpg  # 引き受けるIAMロールを指定
+    #     role-duration-seconds: 3600  # ロールの引き受け時間を秒で指定
 
     # SSHキーをセットアップするステップ
     - name: Setup SSH key
-      run: |
-        mkdir -p ~/.ssh  # SSHディレクトリを作成
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # 秘密鍵をファイルに書き込み
-        chmod 400 ~/.ssh/id_rsa  # 秘密鍵のパーミッションを設定
-        ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts  # SSH接続のためのホストキーをknown_hostsに追加
+      uses: easingthemes/ssh-deploy@main
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        REMOTE_HOST: ${{ secrets.HOST_DNS }}
+        REMOTE_USER: ${{ secrets.EC2_USER_NAME }}
+        TARGET: ${{ secrets.TARGET_DIR }}
+    #     mkdir -p ~/.ssh  # SSHディレクトリを作成
+    #     echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  # 秘密鍵をファイルに書き込み
+    #     chmod 400 ~/.ssh/id_rsa  # 秘密鍵のパーミッションを設定
+    #     ssh-keyscan -H ${{ secrets.EC2_HOST_NAME }} >> ~/.ssh/known_hosts  # SSH接続のためのホストキーをknown_hostsに追加
 
     # EC2にデプロイするステップ
     - name: Deploy to EC2
-      run: |
-        echo "Deploying to EC2"
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST_DNS }}
+        username: ${{ secrets.EC2_USER_NAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+      # run: |
+        # echo "Deploying to EC2"
         # SSHを使用してEC2インスタンスに接続し、deploy_script.shを実行
-        ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "bash -s" < ./task-rpg/scripts/deploy_script.sh
+        # ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "bash -s" < ./task-rpg/scripts/deploy_script.sh
 
         
