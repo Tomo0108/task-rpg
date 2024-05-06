@@ -24,6 +24,7 @@ jobs:
         role-to-assume: arn:aws:iam::185588851189:role/auto_deploy_task-rpg  # 引き受けるIAMロールを指定
         role-duration-seconds: 3600  # ロールの引き受け時間を秒で指定
 
+
     # SSHキーをセットアップするステップ
     - name: Setup SSH key
       run: |
