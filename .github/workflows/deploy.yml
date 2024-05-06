@@ -16,14 +16,14 @@ jobs:
     # このステップでリポジトリのコードをチェックアウトします
     - uses: actions/checkout@v2
     # AWSクレデンシャルをセットアップするステップ
-    - name: Setup AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-1  # リージョンを指定
-        role-to-assume: arn:aws:iam::185588851189:role/auto_deploy_task-rpg  # 引き受けるIAMロールを指定
-        role-duration-seconds: 3600  # ロールの引き受け時間を秒で指定
+    # - name: Setup AWS Credentials
+    #   uses: aws-actions/configure-aws-credentials@v1
+    #   with:
+    #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+    #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #     aws-region: ap-northeast-1  # リージョンを指定
+    #     role-to-assume: arn:aws:iam::185588851189:role/auto_deploy_task-rpg  # 引き受けるIAMロールを指定
+    #     role-duration-seconds: 3600  # ロールの引き受け時間を秒で指定
 
 
     # SSHキーをセットアップするステップ
