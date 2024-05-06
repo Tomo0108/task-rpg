@@ -38,3 +38,5 @@ jobs:
         echo "Deploying to EC2"
         # SSHを使用してEC2インスタンスに接続し、deploy_script.shを実行
         ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER_NAME }}@${{ secrets.EC2_HOST_NAME }} "bash -s" < ./task-rpg/scripts/deploy_script.sh
+
+        
