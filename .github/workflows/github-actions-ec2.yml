@@ -23,6 +23,13 @@ jobs:
           REMOTE_USER: ${{ secrets.EC2_HOST_NAME }}
           TARGET: ${{ secrets.TARGET_DIR }}
 
+      - name: Display environment variables
+        run: |
+          echo "SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY"
+          echo "REMOTE_HOST: $REMOTE_HOST"
+          echo "REMOTE_USER: $REMOTE_USER"
+          echo "TARGET: $TARGET"
+
       - name: Executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
         with:
@@ -36,4 +43,3 @@ jobs:
             sudo systemctl enable apache2
             cd home
             sudo mv * /var/www/html
-            
