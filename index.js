@@ -15,5 +15,5 @@ app.get('/');
 
 // 3000番ポートでサーバーを起動
 app.listen(3000, () => {
-  console.log('Server is running on http://ec2-35-73-204-61.ap-northeast-1.compute.amazonaws.com:3000');
+  console.log('Server is running on http://ec2-18-181-172-54.ap-northeast-1.compute.amazonaws.com');
 });
