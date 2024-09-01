@@ -1,9 +1,20 @@
-<html>
+<!DOCTYPE html>
+<html lang="jp">
 <head>
-<meta charset="utf-8">
-<title>タイトル</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task-RPG</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/styles/main.css">
 </head>
 <body>
-本文
+    <h1>Welcome to Task RPG!</h1>
+    <div id="task-list"></div>
+    <form id="task-form">
+        <input type="text" id="title" placeholder="Task Title">
+        <input type="number" id="level" placeholder="Task Level">
+        <button type="submit">Add Task</button>
+    </form>
+    <script src="/main.js"></script>
 </body>
 </html>
